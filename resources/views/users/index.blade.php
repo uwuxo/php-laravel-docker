@@ -16,6 +16,7 @@
                 <tr>
                     {{-- <th>ID</th> --}}
                     <th>Name</th>
+                    <th>Username</th>
                     <th>Email</th>
                     <th>Rooms</th>
                     <th>Status</th>
@@ -28,6 +29,7 @@
                     <tr>
                         {{-- <td>{{ $user->id }}</td> --}}
                         <td><a href="{{ route('user.edit', $user->id) }}">{{ $user->name }}</a></td>
+                        <td>{{ $user->username }}</td>
                         <td>{{ $user->email }}</td>
                         <td>
                             <p>
