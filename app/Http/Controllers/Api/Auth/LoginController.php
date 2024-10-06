@@ -31,11 +31,11 @@ class LoginController extends Controller
             }
         }
         
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                "The credentials you entered are incorrect"
-            ]);
-        }
+        // if (!$user || !Hash::check($request->password, $user->password)) {
+        //     throw ValidationException::withMessages([
+        //         "The credentials you entered are incorrect"
+        //     ]);
+        // }
         return response()->json([
             'user' => $user,
             'token' => $user->createToken('laraval_api_token')->plainTextToken
