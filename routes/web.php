@@ -32,7 +32,7 @@ Route::post('/user-login', [LoginNewController::class, 'loginOnPage'])->name('lo
 Route::prefix('/user')->middleware('auth')->group(function(){
     Route::get('show', [UserShowController::class, 'show'])->name('show.user');
 });
-Route::prefix('/admin')->middleware('role:super-admin')->group(function(){
+Route::prefix('/admin')->middleware('auth')->group(function(){
     Route::get('/dashboard', [UserNewController::class, 'dashboard'])->name('dashboard');
     Route::get('/users', [UserNewController::class, 'index'])->name('users.index');
     Route::get('/user/edit/{id}', [UserNewController::class, 'edit'])->name('user.edit');

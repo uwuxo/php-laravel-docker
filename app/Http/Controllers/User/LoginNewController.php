@@ -35,7 +35,7 @@ class LoginNewController extends Controller
         // Cố gắng đăng nhập người dùng
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user= Auth::user();
-            if($user->hasRole('super-admin'))
+            if($user->super)
             return redirect()->route('dashboard');
             else{
                 return redirect()->route('show.user');
