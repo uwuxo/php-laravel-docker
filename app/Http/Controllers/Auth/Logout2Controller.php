@@ -13,6 +13,6 @@ class Logout2Controller extends Controller
     public function __invoke(Request $request)
     {
         auth()->guard("web")->logout();
-        return redirect()->route('welcome');
+        return redirect()->route('users.login');
     }
 }

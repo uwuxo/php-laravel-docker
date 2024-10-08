@@ -5,24 +5,34 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
+use App\Models\Course;
 
 class UserNewController extends Controller
 {
+
+    public function dashboard(){
+        $user = Auth::user();
+        $total_groups = Course::count();
+        $total_users = User::count();
+        return view('backend.pages.dashboard.index',compact('total_groups','total_users'));
+    }
     public function index()
     {
         // Phân trang với mỗi trang có 10 người dùng
-        $users = User::paginate(10);
+        $users = User::paginate(20);
 
-        return view('users.index', compact('users'));
+        return view('backend.pages.users.index', compact('users'));
     }
     // Hiển thị form cập nhật
     public function edit($id)
     {
         $user = User::find($id);
+        $groups = Course::select('id','name')->get();
         //$allowed_days = json_decode($user->allowed_days, true); // Lấy danh sách các ngày mà user được phép đăng nhập
-        return view('users.edit', compact('user'));
+        return view('backend.pages.users.edit', compact('user','groups'));
     }
 
     // Xử lý việc cập nhật thông tin
@@ -35,8 +45,13 @@ class UserNewController extends Controller
             'name' => 'required|string|max:255',
             'username' => 'required|max:25|unique:users,username,' . $user->id,
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
-            //'allowed_days' => 'required|array',
         ]);
+
+        if($request->password){
+            $validator = Validator::make($request->all(), [
+                'password' => 'required|string|min:8',
+            ]);
+        }
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
@@ -46,9 +61,13 @@ class UserNewController extends Controller
         $user->name = $request->name;
         $user->username = $request->username;
         $user->email = $request->email;
+        if ($request->password) {
+            $user->password = Hash::make($request->password);
+        }
         $user->status = $request->status;
-        //$user->allowed_days = json_encode($request->allowed_days);
         $user->save();
+
+        $user->courses()->sync($request->groups);
 
         // Redirect với thông báo thành công
         return redirect()->route('users.index')->with('success', 'Profile updated successfully!');
@@ -59,7 +78,7 @@ class UserNewController extends Controller
         $user = User::find($id);
         $user->delete();
         return redirect()->route('users.index')
-                        ->with('success','User deleted successfully');
+                        ->with('success','Profile deleted successfully');
     }
 }
 

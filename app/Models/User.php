@@ -8,10 +8,13 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use PhpParser\Builder\Function_;
+use Spatie\Permission\Traits\HasRoles;
+
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -45,13 +48,9 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
-
-    public Function  tasks()
+    
+    public Function  courses(): BelongsToMany
     {
-        return $this->hasMany(Task::class);
-    }
-    public Function  rooms()
-    {
-        return $this->hasMany(Room::class);
+        return $this->belongsToMany(Course::class);
     }
 }

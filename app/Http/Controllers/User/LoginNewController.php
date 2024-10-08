@@ -34,18 +34,12 @@ class LoginNewController extends Controller
 
         // Cố gắng đăng nhập người dùng
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-            // Đăng nhập thành công, chuyển hướng đến trang mong muốn
-             $user = Auth::user();
-            //$allowedDays = json_decode($user->allowed_days, true); // Lấy danh sách các ngày mà user được phép đăng nhập
-            //$currentDay = Carbon::now()->dayOfWeek; // Lấy ngày trong tuần (0: Chủ Nhật, 1: Thứ Hai, 2: Thứ Ba, ...)
-
-        if (!$user->super) {//!in_array($currentDay, $allowedDays)
-            auth()->guard("web")->logout();
-            return back()->withErrors([
-                'error' => "You don't have permission to log in or you entered the wrong password.",
-            ]);
-        }
-            return redirect()->route('users.index');
+            $user= Auth::user();
+            if($user->hasRole('super-admin'))
+            return redirect()->route('dashboard');
+            else{
+                return redirect()->route('show.user');
+            }
         }
 
         // Đăng nhập không thành công, quay lại với lỗi

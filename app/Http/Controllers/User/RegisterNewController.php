@@ -9,10 +9,13 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
+use App\Models\Course;
+
 class RegisterNewController extends Controller
 {
     public function registerShow(){
-        return view('users.register');
+        $groups = Course::select('id','name')->get();
+        return view('backend.pages.users.create', compact('groups'));
     }
 
     public function register(Request $request)
@@ -28,7 +31,7 @@ class RegisterNewController extends Controller
 
         //$allowedDays = json_encode($request->allowed_days);
         // Create user
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'username' => $request->username,
             'email' => $request->email,
@@ -37,8 +40,12 @@ class RegisterNewController extends Controller
             //'allowed_days' => $allowedDays, // Lưu danh sách ngày được chọn
         ]);
 
+        if($user && !empty($request->groups)){
+            $user->courses()->attach($request->groups);
+        }
+
         if(Auth::user()->super){
-            return redirect()->route('users.index')->with('success', 'Create successful.');
+            return redirect()->route('users.index')->with('success', 'Profile Create successful.');
         }else
         return redirect()->route('users.login')->with('success', 'Registration successful! You can now log in.');
         // Redirect or login the user

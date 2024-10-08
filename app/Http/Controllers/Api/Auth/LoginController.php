@@ -18,17 +18,10 @@ class LoginController extends Controller
     {
         $user = User::where('username', $request->input('username'))->where('status', true)->first();
 
-        if($user){
-            $allowedDays = [];
-            $allowed_days = $user->rooms()->where('name', $request->input('room'))->first();
-            if($allowed_days)
-            $allowedDays = json_decode($allowed_days->allowed_days, true); // Lấy danh sách các ngày mà user được phép đăng nhập
-            $currentDay = Carbon::now()->dayOfWeek; 
-            if (!in_array($currentDay, $allowedDays)) {
-                throw ValidationException::withMessages([
-                    "The credentials you entered are incorrect"
-                ]);
-            }
+        if(!$this->checkAlowedDay($user, $request->input('room'))){
+            throw ValidationException::withMessages([
+                "The credentials you entered are incorrect"
+            ]);
         }
         
         // if (!$user || !Hash::check($request->password, $user->password)) {
@@ -36,9 +29,31 @@ class LoginController extends Controller
         //         "The credentials you entered are incorrect"
         //     ]);
         // }
+        $formattedDate['id'] = $user->id;
+        $formattedDate['name'] = $user->name;
+        $formattedDate['username'] = $user->username;
+        $formattedDate['created_at'] = $user->created_at->format('d-m-Y H:i:s');
+        $formattedDate['updated_at'] = $user->updated_at->format('d-m-Y H:i:s');
         return response()->json([
-            'user' => $user,
+            'user' => $formattedDate,
             'token' => $user->createToken('laraval_api_token')->plainTextToken
         ]);
+    }
+
+    public function checkAlowedDay($user, $input){
+        if($user && !empty($input)){
+            $allowedDays = [];
+            $groups = $user->courses;
+
+            foreach($groups as $group){
+                $room = $group->rooms()->where('name', $input)->first();
+                if($room)
+                $allowedDays = json_decode($room->allowed_days, true);
+                $currentDay = Carbon::now()->dayOfWeek; 
+                if (in_array($currentDay, $allowedDays)) {
+                    return true;
+                }
+            }
+        }
     }
 }

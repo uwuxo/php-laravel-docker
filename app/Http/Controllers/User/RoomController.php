@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Models\User;
 use App\Models\Room;
+use App\Models\Course;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 
@@ -16,15 +17,15 @@ class RoomController extends Controller
      */
     public function index($id)
     {
-        $user = User::find($id);
-        $rooms = $user->rooms()->get();
+        $course = Course::find($id);
+        $rooms = $course->rooms()->get();
 
-        return view('users.rooms', compact(['rooms','user']));
+        return view('backend.pages.rooms.index', compact(['rooms','course']));
     }
 
     public function create($id){
-        $user = User::find($id);
-        return view('users.room_add', compact('user'));
+        $course = Course::find($id);
+        return view('backend.pages.rooms.create', compact('course'));
     }
 
 
@@ -36,16 +37,16 @@ class RoomController extends Controller
         $request->validate([
             'name' => 'required|string|max:255|unique:rooms',
         ]);
-        $user = User::find($id);
+        $course = Course::find($id);
         $allowedDays = json_encode($request->allowed_days);
-        $room = $user->rooms()->create(
+        $room = $course->rooms()->create(
             [
                 'name' => $request->name,
                 'allowed_days' => $allowedDays
             ]
         );
 
-        return redirect()->route('user.rooms', ['id' => $id])->with('success', 'Create successful.');
+        return redirect()->route('rooms', ['id' => $id])->with('success', 'Room Create successful.');
     }
 
     /**
@@ -54,8 +55,9 @@ class RoomController extends Controller
     public function edit($id)
     {
         $room = Room::find($id);
+        $allowed_days = [];
         $allowed_days = json_decode($room->allowed_days, true); // Lấy danh sách các ngày mà user được phép đăng nhập
-        return view('users.room_edit', compact(['room','allowed_days']));
+        return view('backend.pages.rooms.edit', compact(['room','allowed_days']));
     }
 
     /**
@@ -81,7 +83,7 @@ class RoomController extends Controller
         $room->save();
 
         // Redirect với thông báo thành công
-        return redirect()->route('user.rooms', $room->user->id)->with('success', 'Room updated successfully!');
+        return redirect()->route('rooms', $room->course->id)->with('success', 'Room updated successfully!');
     }
 
     /**
@@ -91,7 +93,7 @@ class RoomController extends Controller
     {
         $room = Room::find($id);
         $room->delete();
-        return redirect()->route('user.rooms', $room->user->id)
+        return redirect()->route('rooms', $room->course->id)
                         ->with('success','Room deleted successfully');
     }
 }
